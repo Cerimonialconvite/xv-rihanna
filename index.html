@@ -116,7 +116,10 @@
   .chegou{display:none;margin-top:calc(var(--u)*30);font-family:"Pinyon Script",cursive;font-size:calc(var(--u)*96);color:var(--ouro)}
 
   /* ícones clicáveis */
-  .ponto{width:21.2%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;cursor:pointer;border:0;background:transparent}
+  .ponto{width:19.444%;aspect-ratio:1;transform:translate(-50%,-50%) scale(.55);opacity:0;border-radius:50%;cursor:pointer;border:0;padding:0;background:transparent;transition:opacity .7s ease,transform 1s cubic-bezier(.2,1.45,.4,1)}
+  .ponto.visto{opacity:1;transform:translate(-50%,-50%)}
+  .ponto img{display:block;width:100%;height:100%;border-radius:50%}
+  .ponto:active img{transform:scale(.95)}
   .ponto:focus-visible{outline:2px solid var(--ouro);outline-offset:4px}
   .ponto::after{content:"";position:absolute;inset:0;border-radius:50%;animation:halo 2.6s ease-in-out infinite}
   @keyframes halo{0%,100%{box-shadow:0 0 0 0 rgba(203,164,94,0)}50%{box-shadow:0 0 24px 7px rgba(203,164,94,.4)}}
@@ -133,6 +136,13 @@
   #rsvp .aviso{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:30px;text-align:center;font-size:22px;color:var(--ouro-escuro)}
   #rsvp .fechar{position:absolute;top:8px;right:8px;z-index:2;width:38px;height:38px;border-radius:50%;border:1px solid rgba(203,164,94,.6);background:rgba(251,250,246,.95);color:var(--ouro-escuro);font-size:22px;line-height:1;cursor:pointer}
 
+  /* lista de presentes (igual ao convite da Anna Lua) */
+  .presentes{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(40,60,100,.55);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .4s}
+  .presentes.aberta{opacity:1;pointer-events:auto}
+  .presentes img{display:block;width:min(100vw,calc(100vh * 9 / 16));height:auto;max-height:100vh;box-shadow:0 18px 50px rgba(20,40,80,.4);transform:scale(.96);transition:transform .4s}
+  .presentes.aberta img{transform:none}
+  .presentes button{position:absolute;top:calc(14px + env(safe-area-inset-top));right:14px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(203,164,94,.7);background:rgba(251,250,246,.92);color:var(--ouro-escuro);font-size:24px;line-height:1;cursor:pointer}
+
   /* música */
   #som{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:30;width:46px;height:46px;border-radius:50%;border:1px solid rgba(203,164,94,.55);background:rgba(251,250,246,.88);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(40,70,120,.15)}
   #som.ativo{display:flex}
@@ -145,6 +155,7 @@
     .flor,.sobe,.d1,.d3,.d4,.d5{opacity:1!important;transform:none!important;transition:none!important}
     .escrita{-webkit-mask-image:none;mask-image:none}
     .d2{transform:none!important}
+    .ponto{opacity:1!important;transform:translate(-50%,-50%)!important;transition:none!important}
   }
 </style>
 </head>
@@ -195,8 +206,9 @@
 <img class="peca escrita" data-anim src="img/t-localizacao.png" alt="Localização" style="left:28.056%;top:61.920%;width:43.333%">
 <img class="peca sobe" data-anim src="img/t-alameda-das-framboesas-1.png" alt="Alameda das Framboesas, 151 - Caminho das Árvores, Salvador - BA" style="left:21.204%;top:65.349%;width:57.870%">
 <canvas class="aquarela" data-img="img/local.webp" data-anim aria-label="Ilustração em aquarela do local da festa" style="left:8.333%;top:67.250%;width:83.241%"></canvas>
-<img class="peca sobe" data-anim src="img/t-rotulo-localizacao.png" alt="Localização" style="left:21.667%;top:88.955%;width:24.907%">
-<img class="peca sobe" data-anim src="img/t-confirme-sua-presenca.png" alt="Confirme sua presença" style="left:57.778%;top:88.982%;width:25.833%">
+<img class="peca sobe" data-anim src="img/t-rotulo-localizacao.png" alt="Localização" style="left:6.528%;top:88.955%;width:24.907%">
+<img class="peca sobe" data-anim src="img/t-confirme-sua-presenca.png" alt="Confirme sua presença" style="left:37.083%;top:88.982%;width:25.833%">
+<img class="peca sobe" data-anim src="img/t-lista-de-presentes.png" alt="Lista de presentes" style="left:70.972%;top:88.982%;width:20.093%">
 <img class="peca sobe" data-anim src="img/t-clique-no-icone-para-int.png" alt="Clique no ícone para interagir" style="left:28.981%;top:91.447%;width:42.130%">
 
       <section class="contagem" id="contagem" data-anim aria-label="Contagem regressiva para a festa">
@@ -210,12 +222,18 @@
         <div class="chegou" id="chegou">Chegou o grande dia!</div>
       </section>
 
-      <a class="ponto" style="left:34.120%;top:86.249%" target="_blank" rel="noopener" aria-label="Abrir localização no Google Maps"
-         href="https://www.google.com/maps/search/?api=1&query=Alameda%20das%20Framboesas%2C%20151%20-%20Caminho%20das%20%C3%81rvores%2C%20Salvador%20-%20BA"></a>
-      <button class="ponto" id="abrir-rsvp" type="button" style="left:70.694%;top:86.249%" aria-label="Confirmar presença"></button>
+      <a class="ponto" data-anim style="left:18.981%;top:86.249%" target="_blank" rel="noopener" aria-label="Abrir localização no Google Maps"
+         href="https://www.google.com/maps/search/?api=1&query=Alameda%20das%20Framboesas%2C%20151%20-%20Caminho%20das%20%C3%81rvores%2C%20Salvador%20-%20BA"><img src="img/icone-mapa.png" alt=""></a>
+      <button class="ponto" data-anim id="abrir-rsvp" type="button" style="left:50%;top:86.249%;transition-delay:.15s" aria-label="Confirmar presença"><img src="img/icone-rsvp.png" alt=""></button>
+      <button class="ponto" data-anim id="abrir-presentes" type="button" style="left:81.019%;top:86.249%;transition-delay:.3s" aria-label="Ver lista de presentes"><img src="img/icone-lista.png" alt=""></button>
     </div>
   </div>
 </main>
+
+<div class="presentes" id="presentes" role="dialog" aria-modal="true" aria-label="Lista de presentes">
+  <img src="img/lista.jpg" alt="Lista de presentes. O que eu amaria ganhar: perfume, acessórios, bolsas, make, berloque da Vivara, calçado (tam. 38/39), blusas (tam. P/M), short (tam. 36). Minhas marcas favoritas: C&amp;A, Centauro, Farm, Wepink, Vivara, Youcom, Rommanel, Florenza, Bell Cosméticos, Melissa, Carmen Steffens, Avatim, Eudora, Renner.">
+  <button type="button" id="fechar-presentes" aria-label="Fechar">×</button>
+</div>
 
 <div id="rsvp" role="dialog" aria-modal="true" aria-label="Confirmação de presença">
   <div class="janela">
@@ -394,7 +412,12 @@
   function fecharRsvp(){ rsvp.classList.remove('aberto'); document.body.style.overflow=''; }
   rsvp.querySelector('.fechar').addEventListener('click',fecharRsvp);
   rsvp.addEventListener('click',function(e){ if(e.target===rsvp) fecharRsvp(); });
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape') fecharRsvp(); });
+  var presentes=document.getElementById('presentes');
+  document.getElementById('abrir-presentes').addEventListener('click',function(){ presentes.classList.add('aberta'); document.body.style.overflow='hidden'; });
+  function fecharPresentes(){ presentes.classList.remove('aberta'); document.body.style.overflow=''; }
+  document.getElementById('fechar-presentes').addEventListener('click',fecharPresentes);
+  presentes.addEventListener('click',function(e){ if(e.target===presentes) fecharPresentes(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ fecharRsvp(); fecharPresentes(); } });
 
   /* ---------- pétalas caindo (discretas) ---------- */
   var cv=document.getElementById('petalas'), ctx2=cv.getContext('2d'), dpr=1, W=0, H=0, petalas=[], sprites=[], rodando=false, pausado=false, ult=0;
